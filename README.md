@@ -1,16 +1,18 @@
 # Prompt Harness Translator
 
-A CLI utility that translates skills, agent definitions, and prompt packs across harness formats.
+A CLI utility for translating skills, agent definitions, and prompt packs across harness formats.
 
-## Status
+## Maturity
 
 **Starter utility.**
 
-This repo provides a thin translation layer and testable conversion path for simple agent and prompt assets. It is not yet a complete interoperability standard or a full-fidelity converter across every harness ecosystem.
+This repository provides a thin translation layer and a testable conversion path for simple agent and prompt assets. It is not a complete interoperability standard or a full-fidelity converter across every harness ecosystem.
 
-## Problem
+## Purpose
 
-Prompt and harness assets are often trapped in one ecosystem. This repo creates a translation layer between common structures such as:
+Prompt and harness assets are often shaped around one tool ecosystem. This repository introduces a canonical intermediate schema so prompt and agent assets can be translated more consistently between formats.
+
+Supported concept areas include:
 
 - Claude-style agent markdown
 - generic `AGENTS.md`
@@ -18,12 +20,12 @@ Prompt and harness assets are often trapped in one ecosystem. This repo creates 
 - Codex-oriented instructions
 - Gemini-oriented prompt or extension stubs
 
-## What this starter repo includes
+## Current capabilities
 
-- a canonical intermediate schema
+- canonical intermediate schema
 - translators for a few simple target formats
 - example source and generated artifacts
-- tests for the core conversions
+- tests for core conversions
 
 ## Quick start
 
@@ -33,11 +35,11 @@ prompt-harness translate examples/sample_agent.md --target codex
 prompt-harness translate examples/sample_agent.md --target cursor
 ```
 
-## Design rule
+## Design principle
 
 Translation should preserve intent, role, constraints, and output expectations, while clearly flagging fields that do not map cleanly.
 
-## Public-safe use rule
+## Publication safety
 
 Do not publish private or proprietary prompt assets in this repository.
 
@@ -48,14 +50,14 @@ Avoid committing:
 - customer-specific workflows
 - confidential tool names or endpoints
 - API keys, tokens, or connector details
-- employer, vendor, or client-specific operating instructions
+- employer-, vendor-, or client-specific operating instructions
 - prompt assets that reveal security, moderation, or escalation policies not intended for public release
 
 Use fictional examples that demonstrate structure without exposing private operating logic.
 
-## What this repo does not claim yet
+## Out of scope
 
-This repository does **not** yet claim:
+This starter utility does not yet provide:
 
 - full semantic equivalence across harnesses
 - complete support for all prompt or agent formats
@@ -63,14 +65,14 @@ This repository does **not** yet claim:
 - compatibility with every version of every tool
 - preservation of hidden or proprietary runtime behavior
 
-## Next maturity step
+## Roadmap
 
-To make this repo stronger before public promotion, add:
+To mature into a stronger utility, this repository should add:
 
 1. a compatibility matrix for supported source and target formats
 2. schema validation for the intermediate representation
 3. warning output for lossy conversions
-4. more sample conversions with before/after explanations
+4. more sample conversions with before-and-after explanations
 5. tests for unsupported or partially supported fields
 
 ## Scope and disclaimer
