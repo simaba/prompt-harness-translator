@@ -7,7 +7,7 @@ name = "prompt-harness-translator"
 version = "0.1.0"
 description = "Translate prompt and harness artifacts across formats"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["PyYAML>=6.0"]
 
 [project.scripts]
 prompt-harness = "prompt_harness_translator.cli:main"
