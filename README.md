@@ -74,4 +74,4 @@ This repository is shared in a personal capacity. Generated artifacts should be 
 
 ---
 
-*Maintained by [Sima Bagheri](https://github.com/simaba.*
+*Maintained by [Sima Bagheri](https://github.com/simaba).*
