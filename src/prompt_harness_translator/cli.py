@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import argparse
-from .core import translate_file
+
+from .core import TranslationError, translate_file
 
 
 def main() -> int:
@@ -15,7 +16,10 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "translate":
-        print(translate_file(args.path, args.target))
+        try:
+            print(translate_file(args.path, args.target))
+        except (OSError, TranslationError) as exc:
+            parser.error(str(exc))
         return 0
 
     parser.print_help()

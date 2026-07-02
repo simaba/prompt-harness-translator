@@ -1,85 +1,76 @@
 # Prompt Harness Translator
 
-A CLI utility for translating skills, agent definitions, and prompt packs across harness formats.
+A small CLI utility for translating one supported Markdown/YAML prompt-asset shape into a few reviewable target representations.
 
 ## Maturity
 
 **Starter utility.**
 
-This repository provides a thin translation layer and a testable conversion path for simple agent and prompt assets. It is not a complete interoperability standard or a full-fidelity converter across every harness ecosystem.
+The translator is intentionally narrow: it preserves structured YAML frontmatter, renders a limited set of targets, and warns when a target cannot represent source metadata. It is not an interoperability standard or a guarantee of behavioral equivalence.
 
-## Purpose
+## Start here
 
-Prompt and harness assets are often shaped around one tool ecosystem. This repository introduces a canonical intermediate schema so prompt and agent assets can be translated more consistently between formats.
-
-Supported concept areas include:
-
-- Claude-style agent markdown
-- generic `AGENTS.md`
-- Cursor rules
-- Codex-oriented instructions
-- Gemini-oriented prompt or extension stubs
+- [Supported formats and limits](docs/SUPPORTED_FORMATS.md)
+- [Public Release Checklist](docs/PUBLIC_RELEASE_CHECKLIST.md)
+- [Changelog](CHANGELOG.md)
 
 ## Current capabilities
 
-- canonical intermediate schema
-- translators for a few simple target formats
-- example source and generated artifacts
-- tests for core conversions
+- accepts Markdown with YAML frontmatter delimited by `---`
+- validates frontmatter structure plus `name`/`description` types when present
+- preserves nested, list, and multiline YAML metadata
+- renders `codex`, `cursor`, and `generic` outputs
+- preserves unmapped metadata and emits a visible lossy-conversion warning where needed
+- includes tests for nested YAML, multiline fields, invalid input, and unsupported targets
 
 ## Quick start
 
 ```bash
-pip install -e .
+python -m pip install -e .
 prompt-harness translate examples/sample_agent.md --target codex
 prompt-harness translate examples/sample_agent.md --target cursor
+prompt-harness translate examples/sample_agent.md --target generic
 ```
 
-## Design principle
+## Translation rule
 
-Translation should preserve intent, role, constraints, and output expectations, while clearly flagging fields that do not map cleanly.
+Generated output should preserve the source intent where the target can represent it. When a field cannot map directly, the translator retains it for human review and states that the conversion is lossy.
+
+Do not treat generated text as proof that two runtimes will behave identically.
 
 ## Publication safety
 
-Do not publish private or proprietary prompt assets in this repository.
+Use only fictional, generic, or fully sanitized prompt assets.
 
-Avoid committing:
+Do not publish:
 
-- internal system prompts
-- private agent instructions
-- customer-specific workflows
-- confidential tool names or endpoints
-- API keys, tokens, or connector details
+- internal system prompts or private agent instructions
+- customer-specific workflows or proprietary tool names
+- endpoints, credentials, tokens, connector details, or private environment configuration
 - employer-, vendor-, or client-specific operating instructions
-- prompt assets that reveal security, moderation, or escalation policies not intended for public release
-
-Use fictional examples that demonstrate structure without exposing private operating logic.
+- security, moderation, escalation, or policy logic not intended for public release
 
 ## Out of scope
 
-This starter utility does not yet provide:
+This utility does not provide:
 
-- full semantic equivalence across harnesses
-- complete support for all prompt or agent formats
-- automatic safety review of translated instructions
-- compatibility with every version of every tool
-- preservation of hidden or proprietary runtime behavior
+- full semantic equivalence across tools
+- arbitrary `AGENTS.md` parsing
+- complete support for all agent/prompt formats
+- automatic safety review of generated instructions
+- preservation of hidden runtime behavior, tool permissions, or provider policy
+- compatibility with every version of every ecosystem
 
-## Roadmap
+## Next quality steps
 
-To mature into a stronger utility, this repository should add:
-
-1. a compatibility matrix for supported source and target formats
-2. schema validation for the intermediate representation
-3. warning output for lossy conversions
-4. more sample conversions with before-and-after explanations
-5. tests for unsupported or partially supported fields
+1. version the normalized internal representation
+2. add golden fixtures for each supported target
+3. add more regression tests for quoted and unknown metadata
+4. document changes when a supported target format evolves
 
 ## Scope and disclaimer
 
-This repository is shared in a personal capacity. It is not affiliated with or endorsed by Anthropic, OpenAI, Cursor, Google, or any other harness or tooling provider.
-
-Generated translations should be reviewed manually before use. Prompt and agent behavior can change materially across harnesses even when instructions appear similar.
+This repository is shared in a personal capacity. Generated artifacts should be manually reviewed before use. Prompt and agent behavior can change materially across runtimes even when instruction text appears similar.
 
 ---
 
