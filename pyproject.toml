@@ -6,7 +6,28 @@ build-backend = "setuptools.build_meta"
 name = "prompt-harness-translator"
 version = "0.1.0"
 description = "Translate prompt and harness artifacts across formats"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Sima Bagheri" }
+]
+keywords = [
+    "prompt-engineering",
+    "evaluation-harness",
+    "artifact-translation",
+    "ai-evaluation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Markup",
+]
 dependencies = ["PyYAML>=6.0"]
 
 [project.scripts]
