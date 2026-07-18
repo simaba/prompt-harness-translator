@@ -12,6 +12,10 @@ FRONTMATTER_PATTERN = re.compile(
     flags=re.S,
 )
 TARGETS = {"codex", "cursor", "generic"}
+# Compatibility constant for callers that inspect the source fields directly.
+# Rendering now computes mapped fields per target instead of applying this set
+# globally.
+MAPPED_FIELDS = {"name", "description"}
 
 
 class TranslationError(ValueError):
@@ -19,7 +23,7 @@ class TranslationError(ValueError):
 
 
 def parse_simple_agent_markdown(text: str) -> dict[str, Any]:
-    """Parse YAML frontmatter without deciding which target fields are mapped."""
+    """Parse YAML frontmatter and preserve the original normalized result shape."""
     match = FRONTMATTER_PATTERN.match(text)
     if not match:
         raise TranslationError(
@@ -42,11 +46,20 @@ def parse_simple_agent_markdown(text: str) -> dict[str, Any]:
     if not isinstance(description, str):
         raise TranslationError("frontmatter.description must be a string when provided")
 
+    # Retain unsupported_fields for compatibility with existing callers. It
+    # represents fields outside the original common source core, not the fields
+    # unsupported by every target. Renderers calculate target-specific loss.
+    unsupported = {
+        key: value
+        for key, value in metadata.items()
+        if key not in MAPPED_FIELDS
+    }
     return {
         "name": name.strip(),
         "description": description.strip(),
         "instructions": body.strip(),
         "metadata": metadata,
+        "unsupported_fields": unsupported,
     }
 
 
