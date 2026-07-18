@@ -1,6 +1,6 @@
 import yaml
 
-from prompt_harness_translator.core import translate_text
+from prompt_harness_translator.core import parse_simple_agent_markdown, translate_text
 
 
 SOURCE = """---
@@ -12,6 +12,17 @@ model: reasoning
 
 Do the thing carefully.
 """
+
+
+def test_parser_retains_existing_unsupported_fields_contract():
+    fields = parse_simple_agent_markdown(SOURCE)
+
+    assert fields["name"] == "demo"
+    assert fields["description"] == "Example role"
+    assert fields["unsupported_fields"] == {
+        "tools": ["Read", "Write"],
+        "model": "reasoning",
+    }
 
 
 def test_translate_codex_maps_description_and_preserves_other_metadata():
