@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Collection
 
 import yaml
 
 
-FRONTMATTER_PATTERN = re.compile(r"^---\s*\n(?P<frontmatter>.*?)\n---\s*\n?(?P<body>.*)$", flags=re.S)
+FRONTMATTER_PATTERN = re.compile(
+    r"^---\s*\r?\n(?P<frontmatter>.*?)\r?\n---\s*\r?\n?(?P<body>.*)$",
+    flags=re.S,
+)
 TARGETS = {"codex", "cursor", "generic"}
-MAPPED_FIELDS = {"name", "description"}
 
 
 class TranslationError(ValueError):
@@ -17,10 +19,12 @@ class TranslationError(ValueError):
 
 
 def parse_simple_agent_markdown(text: str) -> dict[str, Any]:
-    """Parse YAML frontmatter and preserve metadata not supported by every target."""
+    """Parse YAML frontmatter without deciding which target fields are mapped."""
     match = FRONTMATTER_PATTERN.match(text)
     if not match:
-        raise TranslationError("Unsupported source format: expected YAML frontmatter delimited by ---")
+        raise TranslationError(
+            "Unsupported source format: expected YAML frontmatter delimited by ---"
+        )
 
     raw_frontmatter, body = match.group("frontmatter"), match.group("body")
     try:
@@ -38,58 +42,77 @@ def parse_simple_agent_markdown(text: str) -> dict[str, Any]:
     if not isinstance(description, str):
         raise TranslationError("frontmatter.description must be a string when provided")
 
-    unsupported = {key: value for key, value in metadata.items() if key not in MAPPED_FIELDS}
     return {
         "name": name.strip(),
         "description": description.strip(),
         "instructions": body.strip(),
         "metadata": metadata,
-        "unsupported_fields": unsupported,
     }
 
 
-def _lossy_warning(fields: dict[str, Any]) -> str:
-    unsupported = fields.get("unsupported_fields", {})
-    if not unsupported:
+def _unmapped_metadata(
+    fields: dict[str, Any],
+    mapped_fields: Collection[str],
+) -> dict[str, Any]:
+    mapped = set(mapped_fields)
+    return {
+        key: value
+        for key, value in fields["metadata"].items()
+        if key not in mapped
+    }
+
+
+def _lossy_warning(unmapped: dict[str, Any]) -> str:
+    if not unmapped:
         return ""
-    keys = ", ".join(sorted(unsupported))
+    keys = ", ".join(sorted(unmapped))
     return (
-        "> **Lossy conversion warning:** this target does not natively apply all source metadata. "
+        "> **Lossy conversion warning:** this target does not natively apply all "
+        "source metadata. "
         f"Preserved for review: {keys}.\n\n"
     )
 
 
-def _preserved_metadata_block(fields: dict[str, Any]) -> str:
-    unsupported = fields.get("unsupported_fields", {})
-    if not unsupported:
+def _preserved_metadata_block(unmapped: dict[str, Any]) -> str:
+    if not unmapped:
         return ""
-    serialized = yaml.safe_dump(unsupported, sort_keys=True, allow_unicode=True).strip()
+    serialized = yaml.safe_dump(
+        unmapped,
+        sort_keys=True,
+        allow_unicode=True,
+    ).strip()
     return f"\n## Unmapped source metadata\n\n```yaml\n{serialized}\n```\n"
 
 
 def render_codex(fields: dict[str, Any]) -> str:
+    unmapped = _unmapped_metadata(fields, {"name", "description"})
     name = fields["name"]
     description = fields["description"]
     instructions = fields["instructions"]
     return (
         f"# {name}\n\n"
-        f"{_lossy_warning(fields)}"
+        f"{_lossy_warning(unmapped)}"
         f"{description}\n\n"
         f"## Instructions\n\n{instructions}\n"
-        f"{_preserved_metadata_block(fields)}"
+        f"{_preserved_metadata_block(unmapped)}"
     )
 
 
 def render_cursor(fields: dict[str, Any]) -> str:
+    # The supported Cursor representation used by this utility has a name and a
+    # rule body. Description and all other source metadata are preserved for
+    # review rather than silently discarded or represented as enforced fields.
+    unmapped = _unmapped_metadata(fields, {"name"})
     payload: dict[str, Any] = {
         "name": fields["name"],
         "rule": fields["instructions"],
     }
-    if fields["unsupported_fields"]:
+    if unmapped:
         payload["conversion_warning"] = (
-            "Lossy conversion: review source_metadata before use; these fields are not enforced by Cursor rules."
+            "Lossy conversion: review source_metadata before use; these fields "
+            "are preserved but not enforced by the target representation."
         )
-        payload["source_metadata"] = fields["unsupported_fields"]
+        payload["source_metadata"] = unmapped
     return yaml.safe_dump(payload, sort_keys=False, allow_unicode=True)
 
 
@@ -104,7 +127,9 @@ def translate_text(text: str, target: str) -> str:
     normalized_target = target.lower()
     if normalized_target not in TARGETS:
         supported = ", ".join(sorted(TARGETS))
-        raise TranslationError(f"Unsupported target: {target}. Supported targets: {supported}")
+        raise TranslationError(
+            f"Unsupported target: {target}. Supported targets: {supported}"
+        )
     if normalized_target == "codex":
         return render_codex(fields)
     if normalized_target == "cursor":
