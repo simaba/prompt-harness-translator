@@ -10,4 +10,11 @@ Before making this repository public:
 - [ ] Run tests and manually inspect at least one output for each supported target.
 - [ ] Create a draft release, review assets and notes, then publish a versioned snapshot.
 
+## Repository hardening (recommended)
+
+- [ ] Keep the supported-formats matrix current and distinguish lossless from lossy mappings.
+- [ ] Include before/after examples that show preserved, transformed, and dropped fields.
+- [ ] Test unsupported and partially supported fields explicitly.
+- [ ] Verify the documented setup and test path from a clean environment before the first public release.
+
 This checklist does not prove cross-tool behavioral equivalence or replace security, privacy, legal, or employer-specific review.
